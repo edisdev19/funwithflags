@@ -81,6 +81,7 @@ namespace heaps.MinMaxHeap
             heap.Add(4);
             heap.Add(4);
             Assert.Equal(5, heap.RootValue);
+            AssertMaxHeapified(heap);
         }
 
         [Fact]
@@ -96,12 +97,13 @@ namespace heaps.MinMaxHeap
             heap.Add(4);
             heap.Add(4);
             Assert.Equal(3, heap.RootValue);
+            AssertMinHeapified(heap);
         }
 
         [Fact]
         public void A06_LeftRight()
         {
-            IDictionary<int, (int? left, int? right)> expectedChildren = 
+            IDictionary<int, (int? left, int? right)> expectedChildren =
                 Enumerable.Range(0, 10)
                 .ToDictionary(i => i, i => ((int?)null, (int?)null));
 
@@ -160,5 +162,83 @@ namespace heaps.MinMaxHeap
                 Assert.False(isRightAvailable);
             }
         }
+
+        public static object[][] A07_A08_BuildMaxHeap_Data = new object[][]
+        {
+            new object[] { new [] { 1, 2, 3, 4, 5, 6, 7 } },
+            new object[] { new [] { 4, 5, 5, 6, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 7, 7, 7, 7, 100, 1, 2, 3, 4, 4, 4 } },
+            new object[] { new [] { 7, 5, 1, 8, 2, 1, 3, 3, 2, 54, 6, 10 } }
+        };
+
+        [Theory]
+        [MemberData(nameof(A07_A08_BuildMaxHeap_Data))]
+        public void A07_BuildMaxHeap(int[] input)
+        {
+            MaxHeap<int> maxHeap = new MaxHeap<int>();
+            for (int i = 0; i < input.Length; i++)
+            {
+                maxHeap.Add(input[i]);
+                AssertMaxHeapified(maxHeap);
+            }
+            AssertHeapData(input, maxHeap);
+        }
+
+        private void AssertHeapData(IEnumerable<int> input, MaxHeap<int> maxHeap)
+        {
+            var inputList = new List<int>(input);
+            AssertMaxHeapified(maxHeap);
+            for (int i = 0; i < maxHeap.Length; i++)
+            {
+                Assert.Contains(maxHeap[i], inputList);
+                inputList.Remove(maxHeap[i]);
+            }
+            Assert.Empty(inputList);
+        }
+
+        private void AssertMaxHeapified(MaxHeap<int> maxHeap, int i = 0)
+        {
+            if (maxHeap.TryGetLeft(i, out int iLeft))
+            {
+                Assert.True(maxHeap[i] >= maxHeap[iLeft]);
+                AssertMaxHeapified(maxHeap, iLeft);
+            }
+            if (maxHeap.TryGetRight(i, out int iRight))
+            {
+                Assert.True(maxHeap[i] >= maxHeap[iRight]);
+                AssertMaxHeapified(maxHeap, iRight);
+            }
+        }
+        private void AssertMinHeapified(MinHeap<int> minHeap, int i = 0)
+        {
+            if (minHeap.TryGetLeft(i, out int iLeft))
+            {
+                Assert.True(minHeap[i] <= minHeap[iLeft]);
+                AssertMinHeapified(minHeap, iLeft);
+            }
+            if (minHeap.TryGetRight(i, out int iRight))
+            {
+                Assert.True(minHeap[i] <= minHeap[iRight]);
+                AssertMinHeapified(minHeap, iRight);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(A07_A08_BuildMaxHeap_Data))]
+        public void A08_PopRoot(int[] input)
+        {
+            MaxHeap<int> maxHeap = new MaxHeap<int>();
+            for (int i = 0; i < input.Length; i++)
+            {
+                maxHeap.Add(input[i]);
+            }
+            AssertHeapData(input, maxHeap);
+            var inputList = input.OrderByDescending(p => p).ToArray();
+            for (int i = 0; i < input.Length; i++)
+            {
+                Assert.Equal(inputList[i], maxHeap.Pop(0));
+                AssertHeapData(inputList.Skip(i+1), maxHeap);
+            }
+        }
+
     }
 }

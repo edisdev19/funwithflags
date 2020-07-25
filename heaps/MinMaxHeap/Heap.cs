@@ -21,7 +21,7 @@ namespace heaps.MinMaxHeap
         protected override bool HeapCondition(int compare) => compare > 0;
     }
 
-    public abstract class Heap<T> : IHeap<T> where T : IComparable, IComparable<T>
+    public abstract class Heap<T> : IHeap<T> where T : IComparable<T>, IComparable
     {
         private readonly IList<T> _values;
 
@@ -30,18 +30,55 @@ namespace heaps.MinMaxHeap
             _values = new List<T>(initialCapacity);
         }
 
-        private int Heapify(int child)
+        private int FlowDown(int index)
         {
-            while (TryGetParent(child, out var parent) &&
-                !HeapCondition(_values[parent].CompareTo(_values[child])))
+            while (true)
             {
-                var aux = _values[child];
-                _values[child] = _values[parent];
-                _values[parent] = aux;
-                child = parent;
+                T largest = _values[index];
+                int largestIndex = index;
+                if (TryGetLeft(index, out var leftIndex))
+                {
+                    if (!HeapCondition(largest.CompareTo(_values[leftIndex])))
+                    {
+                        largest = _values[leftIndex];
+                        largestIndex = leftIndex;
+                    }
+                }
+                if (TryGetRight(index, out var rightIndex))
+                {
+                    if (!HeapCondition(largest.CompareTo(_values[rightIndex])))
+                    {
+                        largest = _values[rightIndex];
+                        largestIndex = rightIndex;
+                    }
+                }
+                if (largestIndex == index)
+                    break;
+
+                Exchange(index, largestIndex);
+                index = largestIndex;
             }
-            return child;
+            return index;
         }
+
+        private int FlowUp(int index)
+        {
+            while (TryGetParent(index, out var parent) &&
+                !HeapCondition(_values[parent].CompareTo(_values[index])))
+            {
+                Exchange(index, parent);
+                index = parent;
+            }
+            return index;
+        }
+
+        private void Exchange(int index, int parent)
+        {
+            var aux = _values[index];
+            _values[index] = _values[parent];
+            _values[parent] = aux;
+        }
+
         protected abstract bool HeapCondition(int compare);
 
         internal int Length => _values.Count;
@@ -50,12 +87,17 @@ namespace heaps.MinMaxHeap
         public int Add(T item)
         {
             _values.Add(item);
-            return Heapify(_values.Count - 1);
+            return FlowUp(_values.Count - 1);
         }
 
         public T Pop(int index)
         {
-            return default(T);
+            Exchange(index, Length - 1);
+            T value = _values[Length - 1];
+            _values.RemoveAt(Length - 1);
+            if (_values.Any())
+                FlowUp(FlowDown(index));
+            return value;
         }
 
         internal bool TryGetParent(int child, out int parent)
