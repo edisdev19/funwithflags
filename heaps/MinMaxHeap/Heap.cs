@@ -1,19 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace heaps.MinMaxHeap
 {
-    public class MinHeap<T> : Heap<T> where T : IComparable
+    public interface IHeap<T> where T : IComparable, IComparable<T>
+    {
+        T RootValue { get; }
+
+        int Add(T item);
+    }
+
+    public class MinHeap<T> : Heap<T> where T : IComparable, IComparable<T>
     {
         protected override bool HeapCondition(int compare) => compare < 0;
     }
-    public class MaxHeap<T> : Heap<T> where T : IComparable
+    public class MaxHeap<T> : Heap<T> where T : IComparable, IComparable<T>
     {
         protected override bool HeapCondition(int compare) => compare > 0;
     }
 
-    public abstract class Heap<T> where T : IComparable
+    public abstract class Heap<T> : IHeap<T> where T : IComparable, IComparable<T>
     {
         private readonly IList<T> _values;
 
@@ -36,8 +44,8 @@ namespace heaps.MinMaxHeap
         }
         protected abstract bool HeapCondition(int compare);
 
-        public int Length => _values.Count;
-        public T this[int index] => _values[index];
+        internal int Length => _values.Count;
+        internal T this[int index] => _values[index];
 
         public int Add(T item)
         {
@@ -45,7 +53,12 @@ namespace heaps.MinMaxHeap
             return Heapify(_values.Count - 1);
         }
 
-        public bool TryGetParent(int child, out int parent)
+        public T Pop(int index)
+        {
+            return default(T);
+        }
+
+        internal bool TryGetParent(int child, out int parent)
         {
             if (child > 0)
             {
@@ -55,5 +68,17 @@ namespace heaps.MinMaxHeap
             parent = -1;
             return false;
         }
+        internal bool TryGetLeft(int index, out int left)
+        {
+            left = index * 2 + 1;
+            return left < Length;
+        }
+        internal bool TryGetRight(int index, out int right)
+        {
+            right = index * 2 + 2;
+            return right < Length;
+        }
+
+        public T RootValue => _values.First();
     }
 }

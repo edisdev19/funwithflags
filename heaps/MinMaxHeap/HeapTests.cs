@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -79,7 +80,7 @@ namespace heaps.MinMaxHeap
             heap.Add(5);
             heap.Add(4);
             heap.Add(4);
-            Assert.Equal(5, heap[0]);
+            Assert.Equal(5, heap.RootValue);
         }
 
         [Fact]
@@ -94,8 +95,70 @@ namespace heaps.MinMaxHeap
             heap.Add(5);
             heap.Add(4);
             heap.Add(4);
-            Assert.Equal(3, heap[0]);
+            Assert.Equal(3, heap.RootValue);
         }
 
+        [Fact]
+        public void A06_LeftRight()
+        {
+            IDictionary<int, (int? left, int? right)> expectedChildren = 
+                Enumerable.Range(0, 10)
+                .ToDictionary(i => i, i => ((int?)null, (int?)null));
+
+            var heap = new MaxHeap<int>();
+            AssertChildren(heap, expectedChildren);
+
+            heap.Add(1234);
+            AssertChildren(heap, expectedChildren);
+
+            heap.Add(1234);
+            expectedChildren[0] = (1, null);
+            AssertChildren(heap, expectedChildren);
+
+            heap.Add(1234);
+            expectedChildren[0] = (1, 2);
+            AssertChildren(heap, expectedChildren);
+
+            heap.Add(12345);
+            expectedChildren[1] = (3, null);
+            AssertChildren(heap, expectedChildren);
+
+            heap.Add(12345);
+            expectedChildren[1] = (3, 4);
+            AssertChildren(heap, expectedChildren);
+        }
+
+        private void AssertChildren(MaxHeap<int> heap, IDictionary<int, (int? left, int? right)> expectedChildren)
+        {
+            foreach (var i in expectedChildren.Keys)
+            {
+                AssertChildren(heap, i, expectedChildren[i]);
+            }
+        }
+
+        private void AssertChildren<T>(Heap<T> heap, int parent, (int? left, int? right) expected)
+            where T : IComparable, IComparable<T>
+        {
+            var isLeftAvailable = heap.TryGetLeft(parent, out var left);
+            if (expected.left.HasValue)
+            {
+                Assert.True(isLeftAvailable);
+                Assert.Equal(expected.left.Value, left);
+            }
+            else
+            {
+                Assert.False(isLeftAvailable);
+            }
+            var isRightAvailable = heap.TryGetRight(parent, out var right);
+            if (expected.right.HasValue)
+            {
+                Assert.True(isRightAvailable);
+                Assert.Equal(expected.right.Value, right);
+            }
+            else
+            {
+                Assert.False(isRightAvailable);
+            }
+        }
     }
 }
