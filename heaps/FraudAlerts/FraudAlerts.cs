@@ -9,8 +9,6 @@ namespace heaps.FraudAlerts
 {
     public class FraudAlerts
     {
-        internal static ITestOutputHelper output;
-
         public static int MedianFinder(int[] items)
         {
             var minHeap = new MinHeap<int>();
@@ -40,10 +38,10 @@ namespace heaps.FraudAlerts
                 var median = d % 2 == 1 ? past[d / 2] * 0.1 : ((past[d / 2] * 0.1 + past[d / 2] * 0.1 - 1) * 0.1 / 2);
                 if (expenditure[i] >= median)
                     counter++;
-                output.WriteLine($"{counter}");
             }
             return counter;
         }
+
         public static int activityNotifications(int[] expenditure, int d)
         {
             var minHeap = new MinHeap<int>();
@@ -63,7 +61,6 @@ namespace heaps.FraudAlerts
             for (int i = d; i < expenditure.Length; i++)
             {
                 var mid = d % 2 == 1 ? (2 * maxHeap[0]) : (minHeap[0] + maxHeap[0]);
-                output.WriteLine($"{mid}");
                 if (expenditure[i] >= mid) counter++;
 
                 var oldExpenditure = expenditure[i - d];

@@ -9,32 +9,9 @@ namespace heaps.FraudAlerts
 {
     public class FraudAlertsTests
     {
-        public FraudAlertsTests(ITestOutputHelper output)
+        [Fact]
+        public void TestCase1()
         {
-            FraudAlerts.output = output;
-        }
-
-
-        [Theory]
-        [InlineData(@"E:\funwithflags\heaps\FraudAlerts\input01.txt", 633)]
-        [InlineData("E:\\funwithflags\\heaps\\FraudAlerts\\input05.txt", 0)]
-        [InlineData("E:\\funwithflags\\heaps\\FraudAlerts\\input07.txt", 1)]
-        public void TestCase1(string inFile, int expectedResult)
-        {
-            var lines = File.ReadAllLines(inFile);
-
-            string[] nd = lines[0].Split(' ');
-            int n = Convert.ToInt32(nd[0]);
-
-            int d = Convert.ToInt32(nd[1]);
-
-            int[] expenditure = Array.ConvertAll(lines[1].Split(' '), 
-                expenditureTemp => Convert.ToInt32(expenditureTemp))
-            ;
-
-            int result = FraudAlerts.activityNotifications(expenditure, d);
-            Assert.Equal(expectedResult, result);
-
             Assert.Equal(
                 2,
                 FraudAlerts.activityNotifications(new[] { 2, 3, 4, 2, 3, 6, 8, 4, 5 }, 5)
