@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Xunit;
 using Xunit.Abstractions;
+using static heaps.FraudAlerts.FraudAlerts;
 
 namespace heaps.FraudAlerts
 {
@@ -35,8 +36,12 @@ namespace heaps.FraudAlerts
         [MemberData(nameof(MidFinderTests))]
         public void MidFinder(int[] input, int mid)
         {
-            int foundMid = FraudAlerts.MedianFinder(input);
-            Assert.Equal(mid, foundMid);
+            RollingMedianFinder rollingMedianFinder = new RollingMedianFinder(input.Length);
+            foreach (int item in input)
+            {
+                rollingMedianFinder.Add(item);
+            }
+            Assert.Equal(2*mid, rollingMedianFinder.DoubleMid);
         }
 
     }

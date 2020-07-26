@@ -9,24 +9,6 @@ namespace heaps.FraudAlerts
 {
     public class FraudAlerts
     {
-        public static int MedianFinder(int[] items)
-        {
-            var minHeap = new MinHeap<int>();
-            var maxHeap = new MaxHeap<int>();
-
-            foreach (int item in items)
-            {
-                maxHeap.Add(item);
-                if (maxHeap.Length > items.Length / 2)
-                {
-                    var maxItem = maxHeap.Pop(0);
-                    minHeap.Add(maxItem);
-                }
-            }
-
-            return items.Length % 2 == 1 ?
-                minHeap[0] : ((minHeap[0] + maxHeap[0]) / 2);
-        }
 
         public static int activityNotificationsTrivial(int[] expenditure, int d)
         {
@@ -44,48 +26,62 @@ namespace heaps.FraudAlerts
 
         public static int activityNotifications(int[] expenditure, int d)
         {
-            var minHeap = new MinHeap<int>();
-            var maxHeap = new MaxHeap<int>();
-
+            RollingMedianFinder medianFinder = new RollingMedianFinder(d);
             for (int i = 0; i < d; i++)
-            {
-                maxHeap.Add(expenditure[i]);
-                if (maxHeap.Length > (d + 1) / 2)
-                {
-                    var maxItem = maxHeap.Pop(0);
-                    minHeap.Add(maxItem);
-                }
-            }
+                medianFinder.Add(expenditure[i]);
 
             int counter = 0;
             for (int i = d; i < expenditure.Length; i++)
             {
-                var mid = d % 2 == 1 ? (2 * maxHeap[0]) : (minHeap[0] + maxHeap[0]);
-                if (expenditure[i] >= mid) counter++;
-
-                var oldExpenditure = expenditure[i - d];
-                if (oldExpenditure <= maxHeap[0])
-                    maxHeap.PopItem(oldExpenditure);
-                else
-                    minHeap.PopItem(oldExpenditure);
-
-                maxHeap.Add(expenditure[i]);
-                if (maxHeap.Length > (d + 1) / 2)
-                {
-                    var maxItem = maxHeap.Pop(0);
-                    minHeap.Add(maxItem);
-                }
-                else if (maxHeap[0] > minHeap[0])
-                {
-                    var maxMax = maxHeap.Pop(0);
-                    var minMin = minHeap.Pop(0);
-                    maxHeap.Add(minMin);
-                    minHeap.Add(maxMax);
-                }
-
+                if (expenditure[i] >= medianFinder.DoubleMid)
+                    counter++;
+                medianFinder.Remove(expenditure[i - d]);
+                medianFinder.Add(expenditure[i]);
             }
 
             return counter;
+        }
+
+        public class RollingMedianFinder
+        {
+            private int _d;
+            MaxHeap<int> _maxHeap = new MaxHeap<int>();
+            MinHeap<int> _minHeap = new MinHeap<int>();
+
+            public RollingMedianFinder(int d)
+            {
+                _d = d;
+            }
+            public void Add(int i)
+            {
+                _maxHeap.Add(i);
+                if (_maxHeap.Length > (_d + 1) / 2)
+                {
+                    var maxItem = _maxHeap.Pop(0);
+                    _minHeap.Add(maxItem);
+                }
+                else if (_maxHeap.Length > 0 && _minHeap.Length > 0 && 
+                    _maxHeap[0] > _minHeap[0])
+                {
+                    var maxMax = _maxHeap.Pop(0);
+                    var minMin = _minHeap.Pop(0);
+                    _maxHeap.Add(minMin);
+                    _minHeap.Add(maxMax);
+                }
+            }
+            public void Remove(int i)
+            {
+                if (i <= _maxHeap[0])
+                    _maxHeap.PopItem(i);
+                else
+                    _minHeap.PopItem(i);
+
+            }
+            public int DoubleMid =>
+                _d % 2 == 1
+                    ? (2 * _maxHeap[0])
+                    : (_minHeap[0] + _maxHeap[0])
+                ;
         }
     }
 }
