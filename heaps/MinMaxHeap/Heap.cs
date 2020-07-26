@@ -95,9 +95,14 @@ namespace heaps.MinMaxHeap
             Exchange(index, Length - 1);
             T value = _values[Length - 1];
             _values.RemoveAt(Length - 1);
-            if (_values.Any())
+            if (_values.Any() && index < Length)
                 FlowUp(FlowDown(index));
             return value;
+        }
+
+        public void PopItem(T item)
+        {
+            Pop(_values.IndexOf(item));
         }
 
         internal bool TryGetParent(int child, out int parent)

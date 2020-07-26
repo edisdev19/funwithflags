@@ -236,9 +236,38 @@ namespace heaps.MinMaxHeap
             for (int i = 0; i < input.Length; i++)
             {
                 Assert.Equal(inputList[i], maxHeap.Pop(0));
-                AssertHeapData(inputList.Skip(i+1), maxHeap);
+                AssertHeapData(inputList.Skip(i + 1), maxHeap);
             }
         }
 
+        [Theory]
+        [MemberData(nameof(A07_A08_BuildMaxHeap_Data))]
+        public void A08_PopMiddle(int[] input)
+        {
+            MaxHeap<int> maxHeap = new MaxHeap<int>();
+            for (int i = 0; i < input.Length; i++)
+            {
+                maxHeap.Add(input[i]);
+            }
+            AssertHeapData(input, maxHeap);
+            var midIndex = input.Length / 2;
+            var inputList = new List<int>(input);
+            var midItem = maxHeap[midIndex];
+            inputList.Remove(midItem);
+
+            maxHeap.Pop(midIndex);
+            AssertHeapData(inputList, maxHeap);
+        }
+
+        [Fact]
+        public void A09_PopLast()
+        {
+            MaxHeap<int> maxHeap = new MaxHeap<int>();
+            maxHeap.Add(1);
+            maxHeap.Add(2);
+            maxHeap.PopItem(2);
+            Assert.Equal(1, maxHeap[0]);
+            Assert.Equal(1, maxHeap.Length);
+        }
     }
 }
